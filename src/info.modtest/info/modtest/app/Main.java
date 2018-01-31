@@ -19,7 +19,7 @@ public class Main {
 
         ClassLoader scl = ClassLoader.getSystemClassLoader();
 
-        return parent.defineModulesWithManyLoaders(cf, scl);
+        return parent.defineModulesWithOneLoader(cf, scl);
 
     }
 
