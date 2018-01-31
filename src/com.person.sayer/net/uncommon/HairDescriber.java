@@ -1,4 +1,4 @@
-package net.common;
+package net.uncommon;
 
 // Describe human hair
 public class HairDescriber {
