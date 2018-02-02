@@ -9,6 +9,10 @@ import net.common.HairDescriber;
 
 
 public class Main {
+
+    private static final String TEMPLATE =
+        "ThingSayer impl: %s, module name: %s\n\tSomething says: %s";
+
     public static ModuleLayer loadModuleLayer() {
         ModuleFinder finder = ModuleFinder.of(Paths.get("third_party"));
 
@@ -26,9 +30,15 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Starting (" + HairDescriber.computerHair() + ")");
         ServiceLoader<ThingSayer> sl = ServiceLoader.load(loadModuleLayer(), ThingSayer.class);
-        for (ThingSayer ts : sl) {
-            System.out.println("Something says: " + ts.sayThing());
-        }
+        sl.stream()
+            .map(p ->
+                 String.format(
+                               TEMPLATE,
+                               p.type(),
+                               p.type().getModule().getName(),
+                               p.get().sayThing()))
+            .forEach(System.out::println);
+
         System.out.println("After modloading (" + HairDescriber.computerHair() + ")");
     }
 }
