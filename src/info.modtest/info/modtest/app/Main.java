@@ -5,25 +5,37 @@ import java.util.ServiceLoader;
 import java.nio.file.Paths;
 import java.lang.module.*;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.File;
 import net.common.HairDescriber;
 
 
 public class Main {
 
     private static final String TEMPLATE =
-        "ThingSayer impl: %s, module name: %s\n\tSomething says: %s";
+        "ThingSayer impl: %s, module name: %s, mod version: %s\n\tSomething says: %s";
 
     public static ModuleLayer loadModuleLayer() {
-        ModuleFinder finder = ModuleFinder.of(Paths.get("third_party"));
-
+        List<ModuleLayer> layers = new ArrayList<>();
+        List<Configuration> configs = new ArrayList<>();
         ModuleLayer parent = ModuleLayer.boot();
-
-        Configuration cf = parent
-            .configuration().resolveAndBind(finder, ModuleFinder.of(), Set.of());
-
         ClassLoader scl = ClassLoader.getSystemClassLoader();
+        for (File jar : Paths.get("third_party")
+                 .toFile()
+                 .listFiles((dir, name) -> name.endsWith(".jar"))) {
+            ModuleFinder finder = ModuleFinder.of(jar.toPath());
 
-        return parent.defineModulesWithOneLoader(cf, scl);
+            Configuration cf = parent
+                .configuration().resolveAndBind(finder, ModuleFinder.of(), Set.of());
+
+            configs.add(cf);
+            layers.add(parent.defineModulesWithOneLoader(cf, scl));
+        }
+
+        Configuration parentConfig =
+            Configuration.resolve(ModuleFinder.of(), configs, ModuleFinder.of(), Set.of());
+        return ModuleLayer.defineModulesWithManyLoaders(parentConfig, layers, scl).layer();
 
     }
 
@@ -36,6 +48,7 @@ public class Main {
                                TEMPLATE,
                                p.type(),
                                p.type().getModule().getName(),
+                               p.type().getModule().getDescriptor().toNameAndVersion(),
                                p.get().sayThing()))
             .forEach(System.out::println);
 

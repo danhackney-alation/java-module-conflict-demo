@@ -1,7 +1,7 @@
 package com.person.sayer;
 
 import info.modtest.face.ThingSayer;
-import net.uncommon.HairDescriber;
+import net.common.HairDescriber;
 
 public class Person implements ThingSayer {
     @Override
